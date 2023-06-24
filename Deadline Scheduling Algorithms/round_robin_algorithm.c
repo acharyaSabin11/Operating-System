@@ -10,6 +10,7 @@ typedef struct process
     int turnaroundTime;
     int waitingTime;
     int completeTime;
+    int remainingTime;
 } process;
 
 // global variables
@@ -30,12 +31,14 @@ int shiftReadyQueue()
     {
         *(readyQueue + i) = *(readyQueue + i + 1);
     }
+    queueIndex--;
+    return id;
 }
 
 int main()
 {
     // Taking process number
-    int processesNumber, quantumTime, currentTime = 0;
+    int processesNumber, quantumTime, currentTime = 0, numberOfProcessesPushed = 0;
     printf("Enter the number of processes: ");
     scanf("%d", &processesNumber);
     printf("Enter the Quantum Time for each process: ");
@@ -57,7 +60,8 @@ int main()
         scanf("%d", &(processes + i)->arrivalTime);
         printf("Enter the cpu burst time of the process: ");
         scanf("%d", &(processes + i)->burstTime);
-        processes->id = i + 1;
+        (processes + i)->id = i + 1;
+        (processes + i)->remainingTime = (processes + i)->burstTime;
     }
 
     // arranging the process in ascending order on the basis of the arrival time.
@@ -76,12 +80,54 @@ int main()
         }
     }
 
-    int completetimeTrack = 0;
-    // calculating complete time of each process
-    for (int i = 0; i < processesNumber; i++)
+    // getting the minimum time which is the time of the first process as the processes are now arranged on the basis of the arrival time.
+    int arrivalTimeToGetPushedToReadyQueue = processes->arrivalTime;
+    int previousArrivalTimeLimit = -1; // just negative to match the condition for below condition check in case the first arrival time is 0.
+
+    process *currentProcess = NULL; // process to run
+    int currentId;                  // variable to store the id of the elemnent in the first of queue
+    // looping until all the process is completed
+    while (completedProcessCount != processesNumber)
     {
-        completetimeTrack += (processes + i)->burstTime;
-        (processes + i)->completeTime = completetimeTrack;
+        // pushing the arrived process to the ready queue
+        for (int i = 0; i < processesNumber; i++)
+        {
+            if ((processes + i)->arrivalTime <= arrivalTimeToGetPushedToReadyQueue && (processes + i)->arrivalTime > previousArrivalTimeLimit)
+            {
+                addToReadyQueue((processes + i)->id);
+            }
+        }
+        // after adding the process
+        if (currentProcess != NULL)
+        {
+            if (currentProcess->remainingTime != 0)
+                addToReadyQueue(currentId);
+        }
+        previousArrivalTimeLimit = arrivalTimeToGetPushedToReadyQueue;
+
+        // poping out the first process id
+        currentId = shiftReadyQueue();
+        // selecting the process with this id
+        for (int i = 0; i < processesNumber; i++)
+        {
+            if ((processes + i)->id == currentId)
+            {
+                currentProcess = (processes + i);
+                break;
+            }
+        }
+        if (currentProcess->remainingTime > quantumTime)
+        {
+            arrivalTimeToGetPushedToReadyQueue += quantumTime;
+            currentProcess->remainingTime -= quantumTime;
+        }
+        else
+        {
+            arrivalTimeToGetPushedToReadyQueue += currentProcess->remainingTime;
+            currentProcess->remainingTime = 0;
+            currentProcess->completeTime = arrivalTimeToGetPushedToReadyQueue;
+            completedProcessCount++;
+        }
     }
 
     // calculating the turnaroundtime and waiting time
@@ -92,10 +138,16 @@ int main()
         (processes + i)->waitingTime = (processes + i)->turnaroundTime - (processes + i)->burstTime;
     }
 
+    int totalWaitingTime = 0, totalTurnaroundTime = 0;
     // printing the table;
     printf("Processes\t\tArrival Time\t\tBurst Time\t\tTurnaround Time\t\tWaiting Time\n");
     for (int i = 0; i < processesNumber; i++)
     {
+        totalTurnaroundTime += (processes + i)->turnaroundTime;
+        totalWaitingTime += (processes + i)->waitingTime;
         printf("%s\t\t\t%d\t\t\t%d\t\t\t%d\t\t\t%d\n", (processes + i)->name, (processes + i)->arrivalTime, (processes + i)->burstTime, (processes + i)->turnaroundTime, (processes + i)->waitingTime);
     }
+    // printing the average.
+    printf("Average Waiting Time: %0.3f\n", (float)totalWaitingTime / processesNumber);
+    printf("Average Turnaround Time: %0.3f\n", (float)totalTurnaroundTime / processesNumber);
 }

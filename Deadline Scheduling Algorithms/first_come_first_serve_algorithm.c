@@ -65,10 +65,16 @@ int main()
         (processes + i)->waitingTime = (processes + i)->turnaroundTime - (processes + i)->burstTime;
     }
 
+    int totalWaitingTime = 0, totalTurnaroundTime = 0;
     // printing the table;
     printf("Processes\t\tArrival Time\t\tBurst Time\t\tTurnaround Time\t\tWaiting Time\n");
     for (int i = 0; i < processesNumber; i++)
     {
+        totalTurnaroundTime += (processes + i)->turnaroundTime;
+        totalWaitingTime += (processes + i)->waitingTime;
         printf("%s\t\t\t%d\t\t\t%d\t\t\t%d\t\t\t%d\n", (processes + i)->name, (processes + i)->arrivalTime, (processes + i)->burstTime, (processes + i)->turnaroundTime, (processes + i)->waitingTime);
     }
+    // printing the average.
+    printf("Average Waiting Time: %0.3f\n", (float)totalWaitingTime / processesNumber);
+    printf("Average Turnaround Time: %0.3f\n", (float)totalTurnaroundTime / processesNumber);
 }
