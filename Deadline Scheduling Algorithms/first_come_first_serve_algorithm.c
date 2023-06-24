@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 typedef struct process
 {
@@ -27,6 +28,7 @@ int main()
         fflush(stdin);
         printf("Enter the name of process %d: ", i + 1);
         fgets((processes + i)->name, sizeof((processes + i)->name), stdin);
+        (processes + i)->name[(strlen((processes + i)->name) - 1)] = '\0'; // removing newline part at end of this string
         printf("Enter the arrival time of the process: ");
         scanf("%d", &(processes + i)->arrivalTime);
         printf("Enter the cpu burst time of the process: ");
@@ -67,13 +69,16 @@ int main()
 
     int totalWaitingTime = 0, totalTurnaroundTime = 0;
     // printing the table;
-    printf("Processes\t\tArrival Time\t\tBurst Time\t\tTurnaround Time\t\tWaiting Time\n");
+    printf("_________________________________________________________________________________________________________________\n");
+    printf("|Processes\t\t|Arrival Time\t\t|Burst Time\t\t|Turnaround Time\t|Waiting Time\t|\n");
+    printf("|_______________________|_______________________|_______________________|_______________________|_______________|\n");
     for (int i = 0; i < processesNumber; i++)
     {
         totalTurnaroundTime += (processes + i)->turnaroundTime;
         totalWaitingTime += (processes + i)->waitingTime;
-        printf("%s\t\t\t%d\t\t\t%d\t\t\t%d\t\t\t%d\n", (processes + i)->name, (processes + i)->arrivalTime, (processes + i)->burstTime, (processes + i)->turnaroundTime, (processes + i)->waitingTime);
+        printf("|%s\t\t\t|%d\t\t\t|%d\t\t\t|%d\t\t\t|%d\t\t|\n", (processes + i)->name, (processes + i)->arrivalTime, (processes + i)->burstTime, (processes + i)->turnaroundTime, (processes + i)->waitingTime);
     }
+    printf("|_______________________|_______________________|_______________________|_______________________|_______________|\n");
     // printing the average.
     printf("Average Waiting Time: %0.3f\n", (float)totalWaitingTime / processesNumber);
     printf("Average Turnaround Time: %0.3f\n", (float)totalTurnaroundTime / processesNumber);
